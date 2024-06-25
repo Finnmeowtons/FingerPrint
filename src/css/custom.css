@@ -9,30 +9,30 @@
 
 @font-face {
     font-family: philosopher;
-    src: url('/res/webfonts/philosopher-regular.woff2') format('woff2'),
-        url('/res/webfonts/philosopher-regular.woff') format('woff');
+    src: url('/FingerPrint/res/webfonts/philosopher-regular.woff2') format('woff2'),
+        url('/FingerPrint/res/webfonts/philosopher-regular.woff') format('woff');
     font-weight: normal;
 }
 
 @font-face {
     font-family: philosopher;
-    src: url('/res/webfonts/philosopher-bold.woff2') format('woff2'),
-        url('/res/webfonts/philosopher-bold.woff') format('woff');
+    src: url('/FingerPrint/res/webfonts/philosopher-bold.woff2') format('woff2'),
+        url('/FingerPrint/res/webfonts/philosopher-bold.woff') format('woff');
     font-weight: bold;
 }
 
 @font-face {
     font-family: philosopher;
-    src: url('/res/webfonts/philosopher-italic.woff2') format('woff2'),
-        url('/res/webfonts/philosopher-italic.woff') format('woff');
+    src: url('/FingerPrint/res/webfonts/philosopher-italic.woff2') format('woff2'),
+        url('/FingerPrint/res/webfonts/philosopher-italic.woff') format('woff');
     font-weight: normal;
     font-style: italic;
 }
 
 @font-face {
     font-family: philosopher;
-    src: url('/res/webfonts/philosopher-bolditalic.woff2') format('woff2'),
-        url('/res/webfonts/philosopher-bolditalic.woff') format('woff');
+    src: url('/FingerPrint/res/webfonts/philosopher-bolditalic.woff2') format('woff2'),
+        url('/FingerPrint/res/webfonts/philosopher-bolditalic.woff') format('woff');
     font-weight: bold;
     font-style: italic;
 }
@@ -151,19 +151,19 @@ body {
 }
 
 .icon-indexfinger-not-enrolled{
-    background-image: url("/res/svg/indexfinger_not_enrolled.svg");
+    background-image: url("/FingerPrint/res/svg/indexfinger_not_enrolled.svg");
 }
 
 .icon-indexfinger-enrolled{
-    background-image: url("/res/svg/indexfinger_enrolled.svg");
+    background-image: url("/FingerPrint/res/svg/indexfinger_enrolled.svg");
 }
 
 .icon-middlefinger-not-enrolled{
-    background-image: url("/res/svg/middlefinger_not_enrolled.svg");
+    background-image: url("/FingerPrint/res/svg/middlefinger_not_enrolled.svg");
 }
 
 .icon-middlefinger-enrolled{
-    background-image: url("/res/svg/middlefinger_enrolled.svg");
+    background-image: url("/FingerPrint/res/svg/middlefinger_enrolled.svg");
 }
 
 .capture-indexfinger{
@@ -180,21 +180,21 @@ body {
 
 @keyframes blink-index-finger{
     from{
-        background-image: url("/res/svg/indexfinger_not_enrolled.svg");
+        background-image: url("/FingerPrint/res/svg/indexfinger_not_enrolled.svg");
     }
 
     to{
-        background-image: url("/res/svg/indexfinger-anim.svg");
+        background-image: url("/FingerPrint/res/svg/indexfinger-anim.svg");
     }
 }
 
 @keyframes blink-middle-finger{
     from{
-        background-image: url("/res/svg/middlefinger_not_enrolled.svg");
+        background-image: url("/FingerPrint/res/svg/middlefinger_not_enrolled.svg");
     }
 
     to{
-        background-image: url("/res/svg/middlefinger-anim.svg");
+        background-image: url("/FingerPrint/res/svg/middlefinger-anim.svg");
     }
 }
 
