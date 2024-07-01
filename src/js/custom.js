@@ -55,7 +55,7 @@ let FingerprintSdkTest = (function () {
             showMessage(error.message);
         });
     };
-    
+
     FingerprintSdkTest.prototype.stopCapture = function () {
         if (!this.acquisitionStarted) //Monitor if already stopped capturing
             return;
@@ -79,15 +79,15 @@ let FingerprintSdkTest = (function () {
 
     FingerprintSdkTest.prototype.getDeviceInfoWithID = function (uid) {
         let _instance = this;
-        return  this.sdk.getDeviceInfo(uid);
+        return this.sdk.getDeviceInfo(uid);
     };
-    
+
     return FingerprintSdkTest;
 })();
 
 
-class Reader{
-    constructor(){
+class Reader {
+    constructor() {
         this.reader = new FingerprintSdkTest();
         this.selectFieldID = null;
         this.currentStatusField = null;
@@ -97,86 +97,138 @@ class Reader{
         this.currentHand = null;
     }
 
-    readerSelectField(selectFieldID){
+    readerSelectField(selectFieldID) {
         this.selectFieldID = selectFieldID;
     }
 
-    setStatusField(statusFieldID){
+    setStatusField(statusFieldID) {
         this.currentStatusField = statusFieldID;
     }
 
-    displayReader(){
+    displayReader() {
         let readers = this.reader.getInfo();  // grab available readers here
         let id = this.selectFieldID;
         let selectField = document.getElementById(id);
         selectField.innerHTML = `<option>Select Fingerprint Reader</option>`;
-        readers.then(function(availableReaders){  // when promise is fulfilled
-            if(availableReaders.length > 0){
+        readers.then(function (availableReaders) {  // when promise is fulfilled
+            if (availableReaders.length > 0) {
                 showMessage("");
-                for(let reader of availableReaders){
+                for (let reader of availableReaders) {
                     selectField.innerHTML += `<option value="${reader}" selected>${reader}</option>`;
                 }
             }
-            else{
+            else {
                 showMessage("Please Connect the Fingerprint Reader");
             }
         })
+        .catch(error => {
+        console.error("Error communicating with fingerprint reader:", error);
+        showMessage("Error: Could not communicate with fingerprint reader. Please check the connection and try again."); // Display a user-friendly message
+    });
     }
 }
 
-class Hand{
-    constructor(){
+class Hand {
+    constructor() {
         this.id = 0;
         this.index_finger = [];
         this.middle_finger = [];
     }
 
-    addIndexFingerSample(sample){
+    addIndexFingerSample(sample) {
         this.index_finger.push(sample);
     }
 
-    addMiddleFingerSample(sample){
+    addMiddleFingerSample(sample) {
         this.middle_finger.push(sample);
     }
 
-    generateFullHand(){
+    generateFullHand() {
         let id = this.id;
         let index_finger = this.index_finger;
         let middle_finger = this.middle_finger;
-        return JSON.stringify({id, index_finger, middle_finger});
+        return JSON.stringify({ id, index_finger, middle_finger });
     }
 }
 
 let myReader = new Reader();
 
-function beginEnrollment(){
+function beginEnrollment() {
     setReaderSelectField("enrollReaderSelect");
     myReader.setStatusField("enrollmentStatusField");
 }
 
-function beginIdentification(){
+function beginIdentification() {
     setReaderSelectField("verifyReaderSelect");
     myReader.setStatusField("verifyIdentityStatusField");
+
+    // Get userIDVerify from query string
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    userIDVerify = urlParams.get('no');
+
+    // Check if userIDVerify is found and not empty
+    if (userIDVerify !== null && userIDVerify !== "") {
+        // Log the obtained userIDVerify (you can remove this later)        
+        console.log("userIDVerify from query string:", userIDVerify);
+    } else {
+        showMessage("userIDVerify parameter missing in query string.");
+    }
+
+    fetch(`php/fetch_fingerprint_data.php?no=${userIDVerify}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("WWW", data)
+            if (data === "User not found") {
+                console.log("HEHE1231", userIDVerify)
+                return;
+            } else {
+                console.log(data.id);
+                document.getElementById("userIdDisplay").textContent = "User ID: " + data.id;
+                document.getElementById("fullnameDisplay").textContent = "Full Name: " + data.fullname;
+                document.getElementById("usernameDisplay").textContent = "Username: " + data.username;
+                document.getElementById("userIDVerify").value = data.id;
+                myReader.currentHand = new Hand();
+               
+                
+                myReader.currentHand.id = userIDVerify;
+                sleep(200).then(() => {
+                myReader.reader.startCapture();
+                });
+                sleep(5000).then(() => {
+                    serverIdentify();
+                });
+                
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching fingerprint data:", error);
+        });
 }
 
-function setReaderSelectField(fieldName){
+function setReaderSelectField(fieldName) {
     myReader.readerSelectField(fieldName);
     myReader.displayReader();
 }
 
-function showMessage(message, message_type="error"){
+function showMessage(message, message_type = "error") {
     let types = new Map();
     types.set("success", "my-text7 my-pri-color text-bold");
     types.set("error", "text-danger");
     let statusFieldID = myReader.currentStatusField;
-    if(statusFieldID){
+    if (statusFieldID) {
         let statusField = document.getElementById(statusFieldID);
         statusField.innerHTML = `<p class="my-text7 my-pri-color my-3 ${types.get(message_type)} font-weight-bold">${message}</p>`;
     }
 }
 
-function beginCapture(){
-    if(!readyForEnroll()){
+function beginCapture() {
+    if (!readyForEnroll()) {
         return;
     }
     myReader.currentHand = new Hand();
@@ -186,9 +238,10 @@ function beginCapture(){
 }
 
 function captureForIdentify() {
-    if(!readyForIdentify()){
+    if (!readyForIdentify()) {
         return;
     }
+    
     myReader.currentHand = new Hand();
     storeUserID();
     myReader.reader.startCapture();
@@ -198,7 +251,7 @@ function captureForIdentify() {
 /**
  * @returns {boolean}
  */
-function readyForEnroll(){
+function readyForEnroll() {
     return ((document.getElementById("userID").value !== "") && (document.getElementById("enrollReaderSelect").value !== "Select Fingerprint Reader"));
 }
 
@@ -206,10 +259,15 @@ function readyForEnroll(){
 * @returns {boolean}
 */
 function readyForIdentify() {
+    sleep(200).then(() => {
+    console.log((document.getElementById("userIDVerify").value !== "") && (document.getElementById("verifyReaderSelect").value !== "Select Fingerprint Reader"));
+    console.log("UserID", (document.getElementById("userIDVerify").value !== ""));
+    console.log("Reader", (document.getElementById("verifyReaderSelect").value !== "Select Fingerprint Reader"));
     return ((document.getElementById("userIDVerify").value !== "") && (document.getElementById("verifyReaderSelect").value !== "Select Fingerprint Reader"));
+    });
 }
 
-function clearCapture(){
+function clearCapture() {
     clearInputs();
     clearPrints();
     clearHand();
@@ -217,7 +275,7 @@ function clearCapture(){
     document.getElementById("userDetails").innerHTML = "";
 }
 
-function clearInputs(){
+function clearInputs() {
     document.getElementById("userID").value = "";
     document.getElementById("userIDVerify").value = "";
     //let id = myReader.selectFieldID;
@@ -225,63 +283,65 @@ function clearInputs(){
     //selectField.innerHTML = `<option>Select Fingerprint Reader</option>`;
 }
 
-function clearPrints(){
+function clearPrints() {
     let indexFingers = document.getElementById("indexFingers");
     let middleFingers = document.getElementById("middleFingers");
     let verifyFingers = document.getElementById("verificationFingers");
 
-    if (indexFingers){
-        for(let indexfingerElement of indexFingers.children){
+    if (indexFingers) {
+        for (let indexfingerElement of indexFingers.children) {
             indexfingerElement.innerHTML = `<span class="icon icon-indexfinger-not-enrolled" title="not_enrolled"></span>`;
         }
     }
 
-    if (middleFingers){
-        for(let middlefingerElement of middleFingers.children){
+    if (middleFingers) {
+        for (let middlefingerElement of middleFingers.children) {
             middlefingerElement.innerHTML = `<span class="icon icon-middlefinger-not-enrolled" title="not_enrolled"></span>`;
         }
     }
 
-    if (verifyFingers){
-        for(let finger of verifyFingers.children){
+    if (verifyFingers) {
+        for (let finger of verifyFingers.children) {
             finger.innerHTML = `<span class="icon icon-indexfinger-not-enrolled" title="not_enrolled"></span>`;
         }
     }
 }
 
-function clearHand(){
+function clearHand() {
     myReader.currentHand = null;
 }
 
-function showSampleCaptured(){
+function showSampleCaptured() {
     let nextElementID = getNextNotEnrolledID();
     let markup = null;
-    if(nextElementID.startsWith("index") || nextElementID.startsWith("verification")){
+    if (nextElementID.startsWith("index") || nextElementID.startsWith("verification")) {
         markup = `<span class="icon icon-indexfinger-enrolled" title="enrolled"></span>`;
     }
 
-    if(nextElementID.startsWith("middle")){
+    if (nextElementID.startsWith("middle")) {
         markup = `<span class="icon icon-middlefinger-enrolled" title="enrolled"></span>`;
     }
 
-    if(nextElementID !== "" && markup){
+    if (nextElementID !== "" && markup) {
         let nextElement = document.getElementById(nextElementID);
         nextElement.innerHTML = markup;
     }
 }
 
-function showNextNotEnrolledItem(){
+function showNextNotEnrolledItem() {
+    console.log("yow");
     let nextElementID = getNextNotEnrolledID();
+    console.log("meh");
     let markup = null;
-    if(nextElementID.startsWith("index") || nextElementID.startsWith("verification")){
+    if (nextElementID.startsWith("index") || nextElementID.startsWith("verification")) {
         markup = `<span class="icon capture-indexfinger" title="not_enrolled"></span>`;
     }
 
-    if(nextElementID.startsWith("middle")){
+    if (nextElementID.startsWith("middle")) {
         markup = `<span class="icon capture-middlefinger" title="not_enrolled"></span>`;
     }
 
-    if(nextElementID !== "" && markup){
+    if (nextElementID !== "" && markup) {
         let nextElement = document.getElementById(nextElementID);
         nextElement.innerHTML = markup;
     }
@@ -290,13 +350,18 @@ function showNextNotEnrolledItem(){
 /**
  * @returns {string}
  */
-function getNextNotEnrolledID(){
+function getNextNotEnrolledID() {
+    console.log("wwow");
+    
     let indexFingers = document.getElementById("indexFingers");
     let middleFingers = document.getElementById("middleFingers");
     let verifyFingers = document.getElementById("verificationFingers");
+    console.log("y1213ow");
 
     let enrollUserId = document.getElementById("userID").value;
+    console.log("enrollUserId", enrollUserId)
     let verifyUserId = document.getElementById("userIDVerify").value;
+    console.log("verifyUserId", verifyUserId)
 
     let indexFingerElement = findElementNotEnrolled(indexFingers);
     let middleFingerElement = findElementNotEnrolled(middleFingers);
@@ -304,15 +369,15 @@ function getNextNotEnrolledID(){
 
     //assumption is that we will always start with
     //indexfinger and run down to middlefinger
-    if (indexFingerElement !== null && enrollUserId !== ""){
+    if (indexFingerElement !== null && enrollUserId !== "") {
         return indexFingerElement.id;
     }
 
-    if (middleFingerElement !== null && enrollUserId !== ""){
+    if (middleFingerElement !== null && enrollUserId !== "") {
         return middleFingerElement.id;
     }
 
-    if (verifyFingerElement !== null && verifyUserId !== ""){
+    if (verifyFingerElement !== null && verifyUserId !== "") {
         return verifyFingerElement.id;
     }
 
@@ -324,10 +389,10 @@ function getNextNotEnrolledID(){
  * @param {Element} element
  * @returns {Element}
  */
-function findElementNotEnrolled(element){
-    if (element){
-        for(let fingerElement of element.children){
-            if(fingerElement.firstElementChild.title === "not_enrolled"){
+function findElementNotEnrolled(element) {
+    if (element) {
+        for (let fingerElement of element.children) {
+            if (fingerElement.firstElementChild.title === "not_enrolled") {
                 return fingerElement;
             }
         }
@@ -336,34 +401,34 @@ function findElementNotEnrolled(element){
     return null;
 }
 
-function storeUserID(){
+function storeUserID() {
     let enrollUserId = document.getElementById("userID").value;
     let identifyUserId = document.getElementById("userIDVerify").value;
     myReader.currentHand.id = enrollUserId !== "" ? enrollUserId : identifyUserId;
 }
 
-function storeSample(sample){
+function storeSample(sample) {
     let samples = JSON.parse(sample.samples);
     let sampleData = samples[0].Data;
 
     let nextElementID = getNextNotEnrolledID();
 
-    if(nextElementID.startsWith("index") || nextElementID.startsWith("verification")){
+    if (nextElementID.startsWith("index") || nextElementID.startsWith("verification")) {
         myReader.currentHand.addIndexFingerSample(sampleData);
         showSampleCaptured();
         showNextNotEnrolledItem();
         return;
     }
 
-    if(nextElementID.startsWith("middle")){
+    if (nextElementID.startsWith("middle")) {
         myReader.currentHand.addMiddleFingerSample(sampleData);
         showSampleCaptured();
         showNextNotEnrolledItem();
     }
 }
 
-function serverEnroll(){
-    if(!readyForEnroll()){
+function serverEnroll() {
+    if (!readyForEnroll()) {
         return;
     }
 
@@ -374,12 +439,12 @@ function serverEnroll(){
 
     let xhttp = new XMLHttpRequest();
 
-    xhttp.onreadystatechange = function(){
-        if(this.readyState === 4 && this.status === 200){
-            if(this.responseText === "success"){
+    xhttp.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            if (this.responseText === "success") {
                 showMessage(successMessage, "success");
             }
-            else{
+            else {
                 showMessage(`${failedMessage} ${this.responseText}`);
             }
         }
@@ -391,10 +456,6 @@ function serverEnroll(){
 }
 
 function serverIdentify() {
-    if(!readyForIdentify()){
-        return;
-    }
-
     let data = myReader.currentHand.generateFullHand();
     let detailElement = document.getElementById("userDetails");
     let successMessage = "Identification Successful!";
@@ -404,11 +465,11 @@ function serverIdentify() {
     let xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200){
-            if(this.responseText !== null && this.responseText !== ""){
+        if (this.readyState === 4 && this.status === 200) {
+            if (this.responseText !== null && this.responseText !== "") {
                 let response = JSON.parse(this.responseText);
-                if(response !== "failed" && response !== null){
-                    showMessage(successMessage, "success");
+                if (response !== "failed" && response !== null) {
+                    console.log(successMessage, "success");
                     detailElement.innerHTML = `<div class="col text-center">
                                 <label for="fullname" class="my-text7 my-pri-color">Fullname</label>
                                 <input type="text" id="fullname" class="form-control" value="${response[0].fullname}">
@@ -419,7 +480,7 @@ function serverIdentify() {
                             </div>`;
                 }
                 else {
-                    showMessage(failedMessage);
+                    console.log(failedMessage);
                 }
             }
         }
@@ -429,3 +490,7 @@ function serverIdentify() {
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send(payload);
 }
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
