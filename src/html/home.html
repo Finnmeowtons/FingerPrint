@@ -12,48 +12,42 @@
     <title>FingerPrint Web App</title>
 
     <script>
-        // Ensure the DOMContentLoaded event listener is placed in the <head> section.
         document.addEventListener('DOMContentLoaded', (event) => {
             console.log("DOMContentLoaded event fired!");
-            beginIdentification();
-            // console.log();
-            // // Get userIDVerify from query string
-            // const queryString = window.location.search;
-            // const urlParams = new URLSearchParams(queryString);
-            // userIDVerify = urlParams.get('no');
 
-            // // Check if userIDVerify is found and not empty
-            // if (userIDVerify !== null && userIDVerify !== "") {
-            //     // Log the obtained userIDVerify (you can remove this later)        
-            //     console.log("userIDVerify from query string:", userIDVerify);
-            // } else {
-            //     showMessage("userIDVerify parameter missing in query string.");
-            // }
+            
+            
 
-            // console.log("HEHE22")
-            // fetch(`php/fetch_fingerprint_data.php?no=${userIDVerify}`)
-            //     .then(response => {
-            //         if (!response.ok) {
-            //             throw new Error('Network response was not ok.');
-            //         }
-            //         return response.json();
-            //     })
-            //     .then(data => {
-            //         if (data === "User not found") {
-            //             showMessage("User not found.");
-            //             return;
-            //         }
-            //         else {
-            //             console.log(data.id);
-            //             document.getElementById("userIdDisplay").textContent = "User ID: " + data.id;
-            //             document.getElementById("fullnameDisplay").textContent = "Full Name: " + data.fullname;
-            //             document.getElementById("usernameDisplay").textContent = "Username: " + data.username;
-            //         }
-            //     })
-            //     .catch(error => {
-            //         console.error("Error fetching fingerprint data:", error);
-            //     });
-        });  
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const userId = urlParams.get('no');
+
+            const scriptSrc = (userId == 1) ? "src/js/custom.copy.js" : "src/js/custom.js";
+
+            // Dynamically load the script
+            const script = document.createElement('script');
+            console.log(script)
+            script.src = scriptSrc;
+            document.head.appendChild(script);
+
+
+            const createEnrollmentSection = document.querySelector(".enrollment-section");
+            const verifyIdentitySection = document.querySelector(".verification-section");
+
+
+            if (userId != 1) {
+                if (createEnrollmentSection) {
+                    createEnrollmentSection.style.display = 'none';
+                }
+                if (verifyIdentitySection) {
+                    verifyIdentitySection.style.display = 'none';
+                }
+                
+                beginIdentification();
+            }
+        });
+
+
     </script>
 </head>
 
@@ -65,7 +59,6 @@
     <script src="src/js/es6-shim.js"></script>
     <script src="src/js/websdk.client.bundle.min.js"></script>
     <script src="src/js/fingerprint.sdk.min.js"></script>
-    <script src="src/js/custom.js"></script>
 
     <div class="container">
         <div class="form-row mt-3">
@@ -91,25 +84,24 @@
             <p id="fullnameDisplay">Full Name: </p>
         </div>
     </div>
-    <div class="container">
-        <p id="statusFieldID"></p>
+    <div class="container" id="statusFieldID">
     </div>
-    <div class="container">
+    <div id="buttonSection" class="container">
         <div id="controls" class="row justify-content-center mx-5 mx-sm-0 mx-lg-5">
-            <div class="col-sm mb-2 ml-sm-5">
+            <div class="col-sm mb-2 ml-sm-5 enrollment-section">
                 <button id="createEnrollmentButton" type="button" class="btn btn-primary btn-block" data-toggle="modal"
                     data-target="#createEnrollment" onclick="beginEnrollment()">Create Enrollment</button>
             </div>
-            <div class="col-sm mb-2 mr-sm-5">
+            <div class="col-sm mb-2 mr-sm-5 verification-section">
                 <button id="verifyIdentityButton" type="button" class="btn btn-primary btn-block" data-toggle="modal"
-                    data-target="#verifyIdentity" onclick="beginIdentification()">Verify Identity</button>
+                    data-target="#verifyIdentity" onclick="originalBeginIdentification()">Verify Identity</button>
             </div>
         </div>
     </div>
 </body>
 
 <section>
-    
+
     <div class="modal fade" id="createEnrollment" data-backdrop="static" tabindex="-1"
         aria-labelledby="createEnrollmentTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
@@ -210,7 +202,7 @@
     </div>
 </section>
 
-<section>
+<section id="verifyIdentitySection">
     <div id="verifyIdentity" class="modal fade" data-backdrop="static" tabindex="-1"
         aria-labelledby="verifyIdentityTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
@@ -232,7 +224,7 @@
                                 <label for="verifyReaderSelect" class="my-text7 my-pri-color">Choose Fingerprint
                                     Reader</label>
                                 <select name="readerSelect" id="verifyReaderSelect" class="form-control"
-                                    onclick="beginIdentification()">
+                                    onclick="originalBeginIdentification()">
                                     <option selected>Select Fingerprint Reader</option>
                                 </select>
                             </div>
