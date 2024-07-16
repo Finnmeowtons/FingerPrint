@@ -1,0 +1,22 @@
+create table users(
+    user_no int PRIMARY KEY AUTO_INCREMENT,
+    user_id varchar(45), 
+    ut_no ENUM('1','2') DEFAULT '2', 
+    user_lname varchar(255), 
+    user_fname varchar(255), 
+    user_mname varchar(255), 
+    user_inactive ENUM('0','1') DEFAULT '0', 
+    user_delete ENUM('0','1') DEFAULT '0'
+);
+
+CREATE TABLE employee_fingerprint (
+  fp_no INT PRIMARY KEY,
+  user_no INT UNIQUE,
+  fp_indexfinger VARCHAR(4000),
+  fp_middlefinger VARCHAR(4000),
+  CONSTRAINT fk_employee_fingerprint_user_no 
+    FOREIGN KEY (user_no) REFERENCES users(user_no)
+);
+
+//Trigger
+INSERT INTO employee_fingerprint (user_no) VALUES (new.user_no)

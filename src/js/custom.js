@@ -419,7 +419,7 @@ function findElementNotEnrolled(element) {
 function storeUserID() {
     let enrollUserId = document.getElementById("userID").value;
     console.log("eyo", enrollUserId);
-    let identifyUserId = document.getElementById("userIDVerify2").value;
+    let identifyUserId = document.getElementById("userIDVerify").value;
     console.log("yow", identifyUserId);
     myReader.currentHand.id = enrollUserId !== "" ? enrollUserId : identifyUserId;
     console.log("id", myReader.currentHand.id);

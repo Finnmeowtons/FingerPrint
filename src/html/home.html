@@ -14,22 +14,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             console.log("DOMContentLoaded event fired!");
-
+            
             
             
 
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
             const userId = urlParams.get('no');
-
-            const scriptSrc = (userId == 1) ? "src/js/custom.copy.js" : "src/js/custom.js";
-
-            // Dynamically load the script
-            const script = document.createElement('script');
-            console.log(script)
-            script.src = scriptSrc;
-            document.head.appendChild(script);
-
 
             const createEnrollmentSection = document.querySelector(".enrollment-section");
             const verifyIdentitySection = document.querySelector(".verification-section");
@@ -43,7 +34,7 @@
                     verifyIdentitySection.style.display = 'none';
                 }
                 
-                beginIdentification();
+                
             }
         });
 
@@ -59,6 +50,7 @@
     <script src="src/js/es6-shim.js"></script>
     <script src="src/js/websdk.client.bundle.min.js"></script>
     <script src="src/js/fingerprint.sdk.min.js"></script>
+    <script src="src/js/custom.js"></script>
 
     <div class="container">
         <div class="form-row mt-3">
