@@ -162,26 +162,21 @@ function originalBeginIdentification() {
     clearCapture();
     setReaderSelectField("verifyReaderSelect");
     myReader.setStatusField("verifyIdentityStatusField");
-    console.log("originalBeginIdentification");
 }
 
 function beginIdentification() {
-    setReaderSelectField("verifyReaderSelect");
-    myReader.setStatusField("verifyIdentityStatusField");
-
-    // Get userIDVerify from query string
+    
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     userIDVerify = urlParams.get('no');
-
+    console.log("yey");
+    
     // Check if userIDVerify is found and not empty
     if (userIDVerify !== null && userIDVerify !== "") {
+        setReaderSelectField("verifyReaderSelect");
+    myReader.setStatusField("verifyIdentityStatusField");
         console.log("userIDVerify from query string:", userIDVerify);
-    } else {
-        console.log("userIDVerify parameter missing in query string.");
-    }
-
-    fetch(`php/fetch_fingerprint_data.php?no=${userIDVerify}`)
+        fetch(`php/fetch_fingerprint_data.php?no=${userIDVerify}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok.');
@@ -193,10 +188,10 @@ function beginIdentification() {
                 console.log("User Not Found", userIDVerify)
                 return;
             } else {
-                document.getElementById("userIdDisplay").textContent = "User ID: " + data.id;
-                document.getElementById("fullnameDisplay").textContent = "Full Name: " + data.fullname;
-                document.getElementById("usernameDisplay").textContent = "Username: " + data.username;
+                console.log("wot");
+                document.getElementById("fullnameDisplay").textContent = data.fullname;
                 document.getElementById("userIDVerify").value = data.id;
+                
                 myReader.currentHand = new Hand();
 
 
@@ -214,6 +209,10 @@ function beginIdentification() {
         .catch(error => {
             console.error("Error fetching fingerprint data:", error);
         });
+    } else {
+        console.log("userIDVerify parameter missing in query string.");
+    }
+    
 }
 
 function setReaderSelectField(fieldName) {
@@ -243,9 +242,7 @@ function beginCapture() {
 }
 
 function captureForIdentify() {
-    console.log("woah")
     if (!readyForIdentify()) {
-        console.log("rip")
         return;
     }
 
@@ -255,10 +252,8 @@ function captureForIdentify() {
         myReader.currentHand = new Hand();
         storeUserID();
         sleep(200).then(() => {
-            console.log(myReader.currentHand.id);
             myReader.reader.startCapture();
             showNextNotEnrolledItem();
-            console.log("woah2")
         });
     });
 }
@@ -267,7 +262,7 @@ function captureForIdentify() {
  * @returns {boolean}
  */
 function readyForEnroll() {
-    return ((document.getElementById("userID").value !== "") && (document.getElementById("enrollReaderSelect").value !== "Select Fingerprint Reader"));
+    return ((document.getElementById("userIDVerify").value !== "") && (document.getElementById("enrollReaderSelect").value !== "Select Fingerprint Reader"));
 }
 
 /**
@@ -276,7 +271,6 @@ function readyForEnroll() {
 async function readyForIdentify() {
     await sleep(200);
     const value = (document.getElementById("userIDVerify").value !== "") && (document.getElementById("verifyReaderSelect").value !== "Select Fingerprint Reader");
-    console.log(value);
     return value;
 
 }
@@ -326,29 +320,24 @@ function clearHand() {
 }
 
 function showSampleCaptured() {
-    console.log('showSampleCaptured');
 
     let nextElementID = getNextNotEnrolledID();
     let markup = null;
     if (nextElementID.startsWith("index") || nextElementID.startsWith("verification")) {
-        console.log('eyo222');
         markup = `<span class="icon icon-indexfinger-enrolled" title="enrolled"></span>`;
     }
 
     if (nextElementID.startsWith("middle")) {
-        console.log('3333');
         markup = `<span class="icon icon-middlefinger-enrolled" title="enrolled"></span>`;
     }
 
     if (nextElementID !== "" && markup) {
-        console.log('4444');
         let nextElement = document.getElementById(nextElementID);
         nextElement.innerHTML = markup;
     }
 }
 
 function showNextNotEnrolledItem() {
-    console.log("showNextNotEnrolledItem");
     let nextElementID = getNextNotEnrolledID();
     let markup = null;
     if (nextElementID.startsWith("index") || nextElementID.startsWith("verification")) {
@@ -373,10 +362,8 @@ function getNextNotEnrolledID() {
     let middleFingers = document.getElementById("middleFingers");
     let verifyFingers = document.getElementById("verificationFingers");
 
-    let enrollUserId = document.getElementById("userID").value;
-    console.log("enrollUserId", enrollUserId)
+    let enrollUserId = document.getElementById("userIDVerify").value;
     let verifyUserId = document.getElementById("userIDVerify").value;
-    console.log("verifyUserId", verifyUserId)
 
     let indexFingerElement = findElementNotEnrolled(indexFingers);
     let middleFingerElement = findElementNotEnrolled(middleFingers);
@@ -417,24 +404,17 @@ function findElementNotEnrolled(element) {
 }
 
 function storeUserID() {
-    let enrollUserId = document.getElementById("userID").value;
-    console.log("eyo", enrollUserId);
+    let enrollUserId = document.getElementById("userIDVerify").value;
     let identifyUserId = document.getElementById("userIDVerify").value;
-    console.log("yow", identifyUserId);
     myReader.currentHand.id = enrollUserId !== "" ? enrollUserId : identifyUserId;
-    console.log("id", myReader.currentHand.id);
 }
 
 function storeSample(sample) {
-    console.log('mao');
     let samples = JSON.parse(sample.samples);
-    console.log(samples);
     let sampleData = samples[0].Data;
-    console.log(sampleData);
     let nextElementID = getNextNotEnrolledID();
 
     if (nextElementID.startsWith("index") || nextElementID.startsWith("verification")) {
-        console.log('index');
         myReader.currentHand.addIndexFingerSample(sampleData);
         showSampleCaptured();
         showNextNotEnrolledItem();
@@ -442,7 +422,6 @@ function storeSample(sample) {
     }
 
     if (nextElementID.startsWith("middle")) {
-        console.log('index');
 
         myReader.currentHand.addMiddleFingerSample(sampleData);
         showSampleCaptured();
@@ -485,7 +464,6 @@ function serverIdentify() {
     let successMessage = "Identification Successful!";
     let failedMessage = "Identification Failed!. Try again";
     let payload = `data=${data}`;
-console.log(payload);
     let xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function () {
@@ -514,7 +492,6 @@ console.log(payload);
             }
         }
     };
-
     xhttp.open("POST", "src/core/verify.php", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send(payload);

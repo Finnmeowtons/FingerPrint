@@ -27,6 +27,7 @@ class Database {
         }
     }
 
+    //Change Username=?
     function getUserInfo($username): array {
         $sql_query = "SELECT * FROM users WHERE username=?";
         $param_type = "s";

@@ -26,7 +26,7 @@
             const verifyIdentitySection = document.querySelector(".verification-section");
 
 
-            if (userId != 1) {
+            if (userId != 1 ) {
                 if (createEnrollmentSection) {
                     createEnrollmentSection.style.display = 'none';
                 }
@@ -34,7 +34,7 @@
                     verifyIdentitySection.style.display = 'none';
                 }
                 
-                
+                beginIdentification();
             }
         });
 
@@ -52,6 +52,36 @@
     <script src="src/js/fingerprint.sdk.min.js"></script>
     <script src="src/js/custom.js"></script>
 
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-10 offset-lg-1">
+                <div class="card">
+                    <div class="card-header">
+                        Employee ID Search
+                    </div>
+                    <div class="card-body">
+                        <form class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="userIDVerify" placeholder="Employee ID">
+                                <button class="btn btn-primary" type="submit">Search</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-body text-start">
+                        <h5 class="card-title" id="fullnameDisplay">Juan Dela Cruz</h5>
+                        <button class="btn btn-primary" id="createEnrollmentButton" data-toggle="modal" 
+                        data-target="#createEnrollment" onclick="beginEnrollment()">Register</button>
+                    </div>
+                </div>
+    
+            </div>
+        </div>
+    </div>
+    
+    
     <div class="container">
         <div class="form-row mt-3">
             <div class="col mb-3 mb-md-0 text-center">
@@ -61,19 +91,6 @@
                 </select>
                 <p></p>
             </div>
-        </div>
-        <div class="form-row mt-4">
-            <div class="col mb-md-0 text-center">
-                <label for="userIDVerify" class="my-text7 my-pri-color m-0">Specify UserID</label>
-                <input type="text" id="userIDVerify" class="form-control mt-1" required>
-            </div>
-        </div>
-    </div>
-    <div class="container">
-        <div class="form-row mt-3">
-            <p id="userIdDisplay">User ID: </p>
-            <p id="usernameDisplay">Username:</p>
-            <p id="fullnameDisplay">Full Name: </p>
         </div>
     </div>
     <div class="container" id="statusFieldID">
