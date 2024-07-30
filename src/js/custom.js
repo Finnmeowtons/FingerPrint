@@ -164,55 +164,119 @@ function originalBeginIdentification() {
     myReader.setStatusField("verifyIdentityStatusField");
 }
 
-function beginIdentification() {
-    
+function checkUserId() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     userIDVerify = urlParams.get('no');
     console.log("yey");
-    
+
     // Check if userIDVerify is found and not empty
     if (userIDVerify !== null && userIDVerify !== "") {
         setReaderSelectField("verifyReaderSelect");
-    myReader.setStatusField("verifyIdentityStatusField");
+        myReader.setStatusField("verifyIdentityStatusField");
         console.log("userIDVerify from query string:", userIDVerify);
         fetch(`php/fetch_fingerprint_data.php?no=${userIDVerify}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data === "User not found") {
-                console.log("User Not Found", userIDVerify)
-                return;
-            } else {
-                console.log("wot");
-                document.getElementById("fullnameDisplay").textContent = data.fullname;
-                document.getElementById("userIDVerify").value = data.id;
-                
-                myReader.currentHand = new Hand();
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data === "User not found") {
+                    console.log("User Not Found", userIDVerify)
+                    return;
+                } else {
+                    console.log(data);
+                    document.getElementById("fullnameDisplay").textContent = data.fullname;
+                    document.getElementById("userIDVerify").value = data.user_no;
+                    document.getElementById("userIDVerify2").value = data.id;
+                    document.getElementById("userIDEnroll").value = data.id;
+                    if (data.indexfinger == null){
+                        console.log('gogogo');
+                        document.getElementById("createEnrollmentButton").style.display = "inline";
+                        console.log("Not Registered")
+                        
+                    } else {
+                        document.getElementById("registeredButton").style.display = "inline";
+                        myReader.currentHand = new Hand();
+                        console.log("Registered")
+                        myReader.currentHand.id = data.user_no;
+                    sleep(200).then(() => {
+                        myReader.reader.startCapture();
+                    });
 
 
-                myReader.currentHand.id = userIDVerify;
-                sleep(200).then(() => {
-                    myReader.reader.startCapture();
-                });
-
-
-                waitForFingerData();
-
-
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching fingerprint data:", error);
-        });
+                    waitForFingerData();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching fingerprint data:", error);
+            });
     } else {
         console.log("userIDVerify parameter missing in query string.");
     }
-    
+}
+
+function beginIdentification() {
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    userIDVerify = urlParams.get('no');
+    console.log("yey");
+
+    // Check if userIDVerify is found and not empty
+    if (userIDVerify !== null && userIDVerify !== "") {
+        setReaderSelectField("verifyReaderSelect");
+        myReader.setStatusField("verifyIdentityStatusField");
+        console.log("userIDVerify from query string:", userIDVerify);
+        fetch(`php/fetch_fingerprint_data.php?no=${userIDVerify}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data === "User not found") {
+                    console.log("User Not Found", userIDVerify)
+                    return;
+                } else {
+                    console.log($data);
+                    console.log($data);
+                    document.getElementById("fullnameDisplay").textContent = data.fullname;
+                    document.getElementById("userIDVerify").value = data.user_no;
+                    document.getElementById("userIDVerify2").value = data.id;
+                    document.getElementById("userIDEnroll").value = data.id;
+
+                    myReader.currentHand = new Hand();
+
+
+                    myReader.currentHand.id = userIDVerify;
+                    sleep(200).then(() => {
+                        myReader.reader.startCapture();
+                    });
+
+
+                    waitForFingerData();
+
+                    document.getElementById("createEnrollmentButton").addEventListener('click', () => {
+                        if (controller) {
+                            console.log("Abort")
+                            controller.abort();
+                        }
+                    });
+
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching fingerprint data:", error);
+            });
+    } else {
+        console.log("userIDVerify parameter missing in query string.");
+    }
+
 }
 
 function setReaderSelectField(fieldName) {
@@ -262,7 +326,7 @@ function captureForIdentify() {
  * @returns {boolean}
  */
 function readyForEnroll() {
-    return ((document.getElementById("userIDVerify").value !== "") && (document.getElementById("enrollReaderSelect").value !== "Select Fingerprint Reader"));
+    return ((document.getElementById("userIDEnroll").value !== "") && (document.getElementById("enrollReaderSelect").value !== "Select Fingerprint Reader"));
 }
 
 /**
@@ -283,8 +347,14 @@ function clearCapture() {
     document.getElementById("userDetails").innerHTML = "";
 }
 
+function clearCapture2() {
+    clearPrints();
+    clearHand();
+    document.getElementById("userDetails").innerHTML = "yo";
+}
+
 function clearInputs() {
-    document.getElementById("userID").value = "";
+    document.getElementById("userIDEnroll").value = "";
     document.getElementById("userIDVerify").value = "";
     //let id = myReader.selectFieldID;
     //let selectField = document.getElementById(id);
@@ -362,7 +432,7 @@ function getNextNotEnrolledID() {
     let middleFingers = document.getElementById("middleFingers");
     let verifyFingers = document.getElementById("verificationFingers");
 
-    let enrollUserId = document.getElementById("userIDVerify").value;
+    let enrollUserId = document.getElementById("userIDEnroll").value;
     let verifyUserId = document.getElementById("userIDVerify").value;
 
     let indexFingerElement = findElementNotEnrolled(indexFingers);
@@ -438,13 +508,17 @@ function serverEnroll() {
     let successMessage = "Enrollment Successful!";
     let failedMessage = "Enrollment Failed!";
     let payload = `data=${data}`;
-
+    console.log(payload);
     let xhttp = new XMLHttpRequest();
-
     xhttp.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
+            console.log(this.responseText)
             if (this.responseText === "success") {
                 showMessage(successMessage, "success");
+                console.log("YEY")
+                sleep(2000).then(() => {
+                window.location.reload()
+                });
             }
             else {
                 showMessage(`${failedMessage} ${this.responseText}`);
@@ -464,6 +538,7 @@ function serverIdentify() {
     let successMessage = "Identification Successful!";
     let failedMessage = "Identification Failed!. Try again";
     let payload = `data=${data}`;
+    console.log(payload);
     let xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function () {
@@ -471,23 +546,17 @@ function serverIdentify() {
             if (this.responseText !== null && this.responseText !== "") {
                 let response = JSON.parse(this.responseText);
                 if (response !== "failed" && response !== null) {
-                    showMessage(successMessage, "success");
-                    console.log('success');
-                    detailElement.innerHTML = `<div class="col text-center">
-                                <label for="fullname" class="my-text7 my-pri-color">Fullname</label>
-                                <input type="text" id="fullname" class="form-control" value="${response[0].fullname}">
-                            </div>
-                            <div class="col text-center">
-                                <label for="email" class="my-text7 my-pri-color">Email</label>
-                                <input type="text" id="email" class="form-control" value="${response[0].username}">
-                            </div>`;
+                    document.getElementById("failedVerification").style.display = "none";
+                    document.getElementById("verified").style.display = "block";
+                    console.log("SUCCESS")
                 }
                 else {
-                    showMessage(failedMessage);
+                    
+                    document.getElementById("failedVerification").style.display = "block";
                     console.log('fail'); // Log or display the error message
-                    showMessage(response.message); // Display the error message to the user
+                    
                     clearCapture();
-                    beginIdentification(); // Or handle the error as needed
+                    checkUserId(); // Or handle the error as needed
                 }
             }
         }

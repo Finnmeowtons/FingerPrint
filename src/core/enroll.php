@@ -33,6 +33,7 @@ if(!empty($_POST["data"])){
     }
     else{
         $json_response = enroll_fingerprint($pre_reg_fmd_array);
+
         $response = json_decode($json_response);
         if ($response !== "enrollment failed"){
             $enrolled_index_finger_fmd_string = $response->enrolled_index_finger;

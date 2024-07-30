@@ -23,7 +23,6 @@ WpOrg\Requests\Autoload::register();
 function enroll_fingerprint($pre_registered_fmd_array){
     $host = getenv('FP_CLIENT_SERVICE_HOST');
     $enrollment_url = "$host/coreComponents/enroll.php";
-
     $data = ["data" => json_encode($pre_registered_fmd_array)];
 
     $response = make_request($enrollment_url, $data);

@@ -34,7 +34,7 @@
                     verifyIdentitySection.style.display = 'none';
                 }
                 
-                beginIdentification();
+                checkUserId();
             }
         });
 
@@ -52,39 +52,10 @@
     <script src="src/js/fingerprint.sdk.min.js"></script>
     <script src="src/js/custom.js"></script>
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-lg-10 offset-lg-1">
-                <div class="card">
-                    <div class="card-header">
-                        Employee ID Search
-                    </div>
-                    <div class="card-body">
-                        <form class="mb-3">
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="userIDVerify" placeholder="Employee ID">
-                                <button class="btn btn-primary" type="submit">Search</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                
-                <div class="card mt-3">
-                    <div class="card-body text-start">
-                        <h5 class="card-title" id="fullnameDisplay">Juan Dela Cruz</h5>
-                        <button class="btn btn-primary" id="createEnrollmentButton" data-toggle="modal" 
-                        data-target="#createEnrollment" onclick="beginEnrollment()">Register</button>
-                    </div>
-                </div>
-    
-            </div>
-        </div>
-    </div>
-    
-    
     <div class="container">
         <div class="form-row mt-3">
             <div class="col mb-3 mb-md-0 text-center">
+                <!-- verifyReaderSelect -->
                 <label for="verifyReaderSelect" class="my-text7 my-pri-color">Choose Fingerprint Reader</label>
                 <select name="readerSelect" id="verifyReaderSelect" class="form-control">
                     <option selected>Select Fingerprint Reader</option>
@@ -93,15 +64,62 @@
             </div>
         </div>
     </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-10 offset-lg-1">
+                <div class="card">
+                    <div class="card-header">
+                        Employee ID Search
+                    </div>
+                    <div class="card-body">
+                        <form class="mb-3" action="php/search.php" method="post">
+                            <div class="input-group">
+                                <!-- userIDVerify -->
+                                <input style="display: none;" type="text" class="form-control" id="userIDVerify" placeholder="Employee ID">
+                                <input type="text" class="form-control" id="userIDVerify2" placeholder="Employee ID" name="userIDVerify2">
+                                <button class="btn btn-primary" type="submit">Search</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- userDetails -->
+                <div class="form-row mt-3" style="display: none;" id="userDetails">
+                    this is where user details will be displayed
+                </div>
+                <div class="card mt-3">
+                    <div class="card-body text-start">
+                        <!-- fullnameDisplay -->
+                        <h5 class="card-title" id="fullnameDisplay">Juan Dela Cruz</h5>
+                        <!-- createEnrollmentButton -->
+                        <button style="display: none;" class="btn btn-primary" id="createEnrollmentButton" data-toggle="modal" 
+                        data-target="#createEnrollment" onclick="beginEnrollment()">Register</button>
+                        <button id="registeredButton" style="cursor: not-allowed; display: none;" class="btn btn-primary" disabled>Registered</button>
+                        <h4 style="display: none;" id="verified" class="mt-4">Verified</h4>
+                        <h4 style="display: none;" id="failedVerification" class="mt-4 text-danger">Please Try Again</h4>
+                    </div>
+                </div>
+    
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    <!-- statusFieldID -->
     <div class="container" id="statusFieldID">
     </div>
+    <!-- buttonSection -->
     <div id="buttonSection" class="container">
+        <!-- controls -->
         <div id="controls" class="row justify-content-center mx-5 mx-sm-0 mx-lg-5">
             <div class="col-sm mb-2 ml-sm-5 enrollment-section">
+                <!-- createEnrollmentButton -->
                 <button id="createEnrollmentButton" type="button" class="btn btn-primary btn-block" data-toggle="modal"
                     data-target="#createEnrollment" onclick="beginEnrollment()">Create Enrollment</button>
             </div>
             <div class="col-sm mb-2 mr-sm-5 verification-section">
+                <!-- verifyIdentityButton -->
                 <button id="verifyIdentityButton" type="button" class="btn btn-primary btn-block" data-toggle="modal"
                     data-target="#verifyIdentity" onclick="originalBeginIdentification()">Verify Identity</button>
             </div>
@@ -110,37 +128,41 @@
 </body>
 
 <section>
-
+    <!-- createEnrollment -->
     <div class="modal fade" id="createEnrollment" data-backdrop="static" tabindex="-1"
         aria-labelledby="createEnrollmentTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
+                    <!-- createEnrollmentTitle -->
                     <h3 class="modal-title my-text my-pri-color" id="createEnrollmentTitle">Create Enrollment</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"
-                        onclick="clearCapture()">
+                        onclick="clearCapture2()">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <form action="#" onsubmit="return false">
+                        <!-- enrollmentStatusField -->
                         <div id="enrollmentStatusField" class="text-center">
                             Enrollment Status will be displayed Here
                         </div>
                         <div class="form-row mt-3">
                             <div class="col mb-3 mb-md-0 text-center">
+                                <!-- enrollReaderSelect -->
                                 <label for="enrollReaderSelect" class="my-text7 my-pri-color">Choose Fingerprint
                                     Reader</label>
-                                <select name="readerSelect" id="enrollReaderSelect" class="form-control"
-                                    onclick="beginEnrollment()">
+                                <select name="readerSelect" id="enrollReaderSelect" class="form-control">
                                     <option selected>Select Fingerprint Reader</option>
                                 </select>
                             </div>
                         </div>
                         <div class="form-row mt-2">
                             <div class="col mb-3 mb-md-0 text-center">
-                                <label for="userID" class="my-text7 my-pri-color">Specify UserID</label>
-                                <input id="userID" type="text" class="form-control" required>
+                                <!-- userID -->
+
+                                <label for="userIDEnroll" class="my-text7 my-pri-color">UserID</label>
+                                <input id="userIDEnroll" type="text" class="form-control" aria-label="Disabled input example" disabled readonly >
                             </div>
                         </div>
                         <div class="form-row mt-1">
@@ -148,6 +170,7 @@
                                 <p class="my-text7 my-pri-color mt-3">Capture Index Finger</p>
                             </div>
                         </div>
+                        <!-- indexFingers -->
                         <div id="indexFingers" class="form-row justify-content-center">
                             <div id="indexfinger1" class="col mb-3 mb-md-0 text-center">
                                 <span class="icon icon-indexfinger-not-enrolled" title="not_enrolled"></span>
@@ -167,6 +190,7 @@
                                 <p class="my-text7 my-pri-color mt-5">Capture Middle Finger</p>
                             </div>
                         </div>
+                        <!-- middleFingers -->
                         <div id="middleFingers" class="form-row justify-content-center">
                             <div id="middleFinger1" class="col mb-3 mb-md-0 text-center">
                                 <span class="icon icon-middlefinger-not-enrolled" title="not_enrolled"></span>
@@ -212,11 +236,13 @@
 </section>
 
 <section id="verifyIdentitySection">
+    <!-- verifyIdentity -->
     <div id="verifyIdentity" class="modal fade" data-backdrop="static" tabindex="-1"
         aria-labelledby="verifyIdentityTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
+                    <!-- verifyIdentityTitle -->
                     <h3 class="modal-title my-text my-pri-color" id="verifyIdentityTitle">Identity Verification</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"
                         onclick="clearCapture()">
@@ -225,11 +251,13 @@
                 </div>
                 <div class="modal-body">
                     <form action="#" onsubmit="return false">
+                        <!-- verifyIdentityStatusField -->
                         <div id="verifyIdentityStatusField" class="text-center">
                             verifyIdentity Status will be displayed Here
                         </div>
                         <div class="form-row mt-3">
                             <div class="col mb-3 mb-md-0 text-center">
+                                <!-- verify section verifyReaderSelect -->
                                 <label for="verifyReaderSelect" class="my-text7 my-pri-color">Choose Fingerprint
                                     Reader</label>
                                 <select name="readerSelect" id="verifyReaderSelect" class="form-control"
@@ -240,6 +268,7 @@
                         </div>
                         <div class="form-row mt-4">
                             <div class="col mb-md-0 text-center">
+                                <!-- verify section userIDVerify -->
                                 <label for="userIDVerify" class="my-text7 my-pri-color m-0">Specify UserID</label>
                                 <input type="text" id="userIDVerify" class="form-control mt-1" required>
                             </div>
@@ -249,14 +278,14 @@
                                 <p class="my-text7 my-pri-color mt-1">Capture Verification Finger</p>
                             </div>
                         </div>
+                        <!-- verificationFingers -->
                         <div id="verificationFingers" class="form-row justify-content-center">
+                            <!-- verificationFinger -->
                             <div id="verificationFinger" class="col mb-md-0 text-center">
                                 <span class="icon icon-indexfinger-not-enrolled" title="not_enrolled"></span>
                             </div>
                         </div>
-                        <div class="form-row mt-3" id="userDetails">
-                            this is where user details will be displayed
-                        </div>
+                        
                         <div class="form-row m-3 mt-md-5 justify-content-center">
                             <div class="col-4">
                                 <button class="btn btn-primary btn-block my-sec-bg my-text-button py-1" type="submit"
